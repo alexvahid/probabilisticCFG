@@ -1,0 +1,5 @@
+//webppl just kinda outputs the last expression if it has no destination
+//run this on command line --> webppl helloWebPPL.wppl
+
+[ "Hello WebPPL!", flip() ]
+

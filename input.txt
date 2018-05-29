@@ -1,0 +1,27 @@
+/*
+var makeCoin = function(weight) { return function() { flip(weight) ? 'h' : 't' } };
+var fairCoin = makeCoin(0.5);
+var trickCoin = makeCoin(0.95);
+var bentCoin = makeCoin(0.25);
+
+var example = function() {
+  if (fairCoin() == 'h') {
+        return 1 // This path occurs with a probability of 50%
+  }
+  if (trickCoin() == 'h') {
+        return 2 // This path occurs with a probability of 47.5%
+  }
+  else {
+        return 3 // This path occurs with a probability of 2.5%
+  }
+  if (bentCoin() == 't') {
+        return 4 // This path occurs with a probability of 0%
+  }
+}
+*/
+
+let x = 2 + 3;
+while (x > 2) {
+    console.log('yay');
+}
+console.log('no');

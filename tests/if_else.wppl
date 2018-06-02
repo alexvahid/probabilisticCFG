@@ -1,0 +1,12 @@
+//if elses
+var a = flip();
+if (a) {
+    var b = flip();
+    if (b) {
+        0;
+    } else {
+        1;
+    }
+} else {
+    2;
+}

@@ -5,6 +5,9 @@ const fs = require('fs');
 const Esprima = require('esprima');
 const Styx = require('styx');
 const digraphe = require('digraphe');
+const cytosnap = require('cytosnap');
+
+var snap = cytosnap();
 
 
 function runWebPPL() {
@@ -52,7 +55,7 @@ function inferProbability(edge) {
     return trueProb;
 }
 
-fs.readFile('webPPLInput.wppl', 'utf8', function(err, code) {
+fs.readFile('./tests/if_else.wppl', 'utf8', function(err, code) {
     if (err) {
         console.log(err);
         return;
@@ -191,4 +194,66 @@ fs.readFile('webPPLInput.wppl', 'utf8', function(err, code) {
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);
 
     console.log(controlFlowJSON);
+
+    var elements = {nodes: [], edges: []};
+    controlFlowInfo.flowGraph.nodes.forEach(function(node) {
+        elements.nodes.push({data: { id: node.id.toString() }})
+    });
+    controlFlowInfo.flowGraph.edges.forEach(function(edge) {
+        elements.edges.push({data: { source: edge.source.id.toString(), target: edge.target.id.toString(), name: edge.label + ", " + edge.probability }});
+    });
+
+    snap.start().then(function(){
+        return snap.shot({    
+            elements: elements,
+            layout: { // http://js.cytoscape.org/#init-opts/layout
+                name: 'breadthfirst',
+                maximalAdjustments: 100,
+            },
+            style: [
+                {
+                selector: 'node',
+                style: {
+                    'content': 'data(id)',
+                    'text-valign': 'center',
+                    'text-halign': 'middle',
+                    'background-color': '#11479e',
+                    'color' : 'white',
+                }
+                },
+            
+                {
+                selector: 'edge',
+                style: {
+                    'content': 'data(name)',
+                    'text-opacity': 0.5,
+                    'text-valign': 'bottom',
+                    'text-halign': 'right',
+                    'curve-style': 'bezier',
+                    'width': 4,
+                    'target-arrow-shape': 'triangle',
+                    'line-color': '#9dbaea',
+                    'target-arrow-color': '#9dbaea'
+                }
+                }
+            ],
+            
+            resolvesTo: 'base64uri',
+            format: 'png',
+            width: 640,
+            height: 480,
+            background: 'white'
+        });
+    }).then(function( img ){
+        var base64Data = img.replace(/^data:image\/png;base64,/, "");
+        fs.writeFile("out.png", base64Data, 'base64', function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            process.exit()
+        });
+    });
 });
+
+
+

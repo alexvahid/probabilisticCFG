@@ -1,0 +1,14 @@
+//function a gets hit twice
+var a = function(x) {
+    if (flip(x)) {
+        return 100;
+    } else {
+        return 1;
+    }
+}
+var driver = function() {
+    var y = a(.6);
+    var z = a(.4);
+    return y + z;
+}
+Infer({ model: driver })

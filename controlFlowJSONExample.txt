@@ -1,0 +1,168 @@
+/usr/local/bin/node --inspect-brk=3545 index.js 
+Debugger listening on ws://127.0.0.1:3545/2fc3dea0-b9c8-447f-b65a-12b1314ae8fb
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+{
+  "program": {
+    "flowGraph": {
+      "nodes": [
+        {
+          "id": 1,
+          "type": "Entry"
+        },
+        {
+          "id": 2,
+          "type": "SuccessExit"
+        },
+        {
+          "id": 4,
+          "type": "Normal"
+        },
+        {
+          "id": 5,
+          "type": "Normal"
+        },
+        {
+          "id": 6,
+          "type": "Normal"
+        },
+        {
+          "id": 8,
+          "type": "Normal"
+        },
+        {
+          "id": 10,
+          "type": "Normal"
+        }
+      ],
+      "edges": [
+        {
+          "from": 1,
+          "to": 4,
+          "type": "Normal",
+          "label": "a = flip()",
+          "data": {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "a"
+            },
+            "init": {
+              "type": "CallExpression",
+              "callee": {
+                "type": "Identifier",
+                "name": "flip"
+              },
+              "arguments": []
+            }
+          }
+        },
+        {
+          "from": 4,
+          "to": 5,
+          "type": "Normal",
+          "label": "b = 0",
+          "data": {
+            "type": "VariableDeclarator",
+            "id": {
+              "type": "Identifier",
+              "name": "b"
+            },
+            "init": {
+              "type": "Literal",
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        },
+        {
+          "from": 5,
+          "to": 6,
+          "type": "Conditional",
+          "label": "a == true",
+          "data": {
+            "type": "BinaryExpression",
+            "operator": "==",
+            "left": {
+              "type": "Identifier",
+              "name": "a"
+            },
+            "right": {
+              "type": "Literal",
+              "value": true,
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "from": 5,
+          "to": 8,
+          "type": "Conditional",
+          "label": "a != true",
+          "data": {
+            "type": "BinaryExpression",
+            "operator": "!=",
+            "left": {
+              "type": "Identifier",
+              "name": "a"
+            },
+            "right": {
+              "type": "Literal",
+              "value": true,
+              "raw": "true"
+            }
+          }
+        },
+        {
+          "from": 6,
+          "to": 10,
+          "type": "Normal",
+          "label": "b = 1",
+          "data": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+              "type": "Identifier",
+              "name": "b"
+            },
+            "right": {
+              "type": "Literal",
+              "value": 1,
+              "raw": "1"
+            }
+          }
+        },
+        {
+          "from": 8,
+          "to": 10,
+          "type": "Normal",
+          "label": "b = 2",
+          "data": {
+            "type": "AssignmentExpression",
+            "operator": "=",
+            "left": {
+              "type": "Identifier",
+              "name": "b"
+            },
+            "right": {
+              "type": "Literal",
+              "value": 2,
+              "raw": "2"
+            }
+          }
+        },
+        {
+          "from": 10,
+          "to": 2,
+          "type": "Normal",
+          "label": "b",
+          "data": {
+            "type": "Identifier",
+            "name": "b"
+          }
+        }
+      ]
+    }
+  },
+  "functions": []
+}

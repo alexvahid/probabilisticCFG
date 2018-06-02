@@ -1,0 +1,8 @@
+
+var driver = function() {
+    arr = [.1,.5,.9]
+    for (var v in arr) {
+        flip(v)
+    }
+}
+JSON.stringify(Infer({ model: driver }));

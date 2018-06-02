@@ -1,0 +1,12 @@
+//how many flips in a row?
+//function a gets hit possibly infinite times
+var a = function(x) {
+    if (flip()) {
+        a(x+1);
+    } 
+    return x;
+}
+var driver = function() {
+    return a(0);
+}
+JSON.stringify(Infer({ model: driver }));

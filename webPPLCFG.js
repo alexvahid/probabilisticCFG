@@ -61,8 +61,6 @@ fs.readFile('./tests/if_else.wppl', 'utf8', function(err, code) {
         return;
     }
 
-    runWebPPL();
-
     //create the ast
     let ast = Esprima.parse(code);
 

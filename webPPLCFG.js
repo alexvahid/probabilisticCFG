@@ -10,6 +10,7 @@ const Escodegen = require('escodegen')
 const Styx = require('styx');
 const digraphe = require('digraphe');
 const cytosnap = require('cytosnap');
+const parseArgs = require('minimist');
 const CFGAnalyzer = require('./CFGAnalyzer');
 var AstPreprocessing = require("./node_modules/styx/lib/parser/preprocessing/functionExpressionRewriter");
 var snap = cytosnap();
@@ -305,16 +306,21 @@ function createVisualization(elements) {
 }
 
 function displayUsage() {
-    console.log("Usage: node webPPLCFG.js program_file");
+    console.log("Usage: node webPPLCFG.js [options] program_file");
+    console.log("   options:");
+    console.log("       -r      Remove unreachable nodes from CFG");
 }
 
 // Get command line arguments
-if (process.argv.length < 3) {
+let argv = parseArgs(process.argv);
+
+if (argv._.length !== 3) {
     displayUsage();
     process.exit(1);
 }
 
-var programFile = process.argv[2];
+let programFile = argv._[2];
+let rOption = typeof argv.r !== 'undefined';
 
 fs.readFile(programFile, 'utf8', function(err, code) {
     if (err) {
@@ -334,8 +340,10 @@ fs.readFile(programFile, 'utf8', function(err, code) {
 
     visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0);
 
-    let cfgAnalyzer = new CFGAnalyzer();
-    cfgAnalyzer.removeUnreachableNodes(graph, controlFlowInfo);
+    if (rOption) {
+        let cfgAnalyzer = new CFGAnalyzer();
+        cfgAnalyzer.removeUnreachableNodes(graph, controlFlowInfo);
+    }
 
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);
     console.log(controlFlowJSON);

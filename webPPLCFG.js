@@ -10,10 +10,10 @@ const Escodegen = require('escodegen')
 const Styx = require('styx');
 const digraphe = require('digraphe');
 const cytosnap = require('cytosnap');
+const CFGAnalyzer = require('./CFGAnalyzer');
 var AstPreprocessing = require("./node_modules/styx/lib/parser/preprocessing/functionExpressionRewriter");
 var snap = cytosnap();
 var walk = require( 'estree-walker' ).walk;
-
 
 function runWebPPL() {
     const
@@ -309,7 +309,7 @@ function displayUsage() {
 }
 
 // Get command line arguments
-if (process.argv.length != 3) {
+if (process.argv.length < 3) {
     displayUsage();
     process.exit(1);
 }
@@ -333,7 +333,10 @@ fs.readFile(programFile, 'utf8', function(err, code) {
     let graph = loadGraph(controlFlowInfo.flowGraph);
 
     visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0);
-    
+
+    let cfgAnalyzer = new CFGAnalyzer();
+    cfgAnalyzer.removeUnreachableNodes(graph, controlFlowInfo);
+
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);
     console.log(controlFlowJSON);
 

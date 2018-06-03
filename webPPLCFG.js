@@ -252,43 +252,7 @@ function loadGraph(flowGraph) {
     return graph;
 }
 
-fs.readFile('./tests/if_else.wppl', 'utf8', function(err, code) {
-    if (err) {
-        console.log(err);
-        return;
-    }
-
-    //create the ast
-    let ast = Esprima.parse(code);
-
-    //create the plain control flow graph
-    let controlFlowInfo = Styx.parse(ast);
-
-    var rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(ast);
-
-    let graph = loadGraph(controlFlowInfo.flowGraph);
-
-    visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0);
-    
-    let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);
-    console.log(controlFlowJSON);
-
-    var elements = {nodes: [], edges: []};
-    controlFlowInfo.flowGraph.nodes.forEach(function(node) {
-        elements.nodes.push({data: { id: node.id.toString() }})
-    });
-    controlFlowInfo.flowGraph.edges.forEach(function(edge) {
-        elements.edges.push({data: { source: edge.source.id.toString(), target: edge.target.id.toString(), name: edge.label + ", " + edge.probability }});
-    });
-    controlFlowInfo.functions.forEach(function(func) {
-        func.flowGraph.nodes.forEach(function(node) {
-            elements.nodes.push({data: { id: node.id.toString() }})
-        });
-        func.flowGraph.edges.forEach(function(edge) {
-            elements.edges.push({data: { source: edge.source.id.toString(), target: edge.target.id.toString(), name: edge.label + ", " + edge.probability }});
-        });
-    });
-
+function createVisualization(elements) {
     snap.start().then(function(){
         return snap.shot({    
             elements: elements,
@@ -338,6 +302,58 @@ fs.readFile('./tests/if_else.wppl', 'utf8', function(err, code) {
             process.exit()
         });
     });
+}
+
+function displayUsage() {
+    console.log("Usage: node webPPLCFG.js program_file");
+}
+
+// Get command line arguments
+if (process.argv.length != 3) {
+    displayUsage();
+    process.exit(1);
+}
+
+var programFile = process.argv[2];
+
+fs.readFile(programFile, 'utf8', function(err, code) {
+    if (err) {
+        console.log(err);
+        return;
+    }
+
+    //create the ast
+    let ast = Esprima.parse(code);
+
+    //create the plain control flow graph
+    let controlFlowInfo = Styx.parse(ast);
+
+    var rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(ast);
+
+    let graph = loadGraph(controlFlowInfo.flowGraph);
+
+    visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0);
+    
+    let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);
+    console.log(controlFlowJSON);
+
+    var elements = {nodes: [], edges: []};
+    controlFlowInfo.flowGraph.nodes.forEach(function(node) {
+        elements.nodes.push({data: { id: node.id.toString() }})
+    });
+    controlFlowInfo.flowGraph.edges.forEach(function(edge) {
+        elements.edges.push({data: { source: edge.source.id.toString(), target: edge.target.id.toString(), name: edge.label + ", " + edge.probability }});
+    });
+    controlFlowInfo.functions.forEach(function(func) {
+        func.flowGraph.nodes.forEach(function(node) {
+            elements.nodes.push({data: { id: node.id.toString() }})
+        });
+        func.flowGraph.edges.forEach(function(edge) {
+            elements.edges.push({data: { source: edge.source.id.toString(), target: edge.target.id.toString(), name: edge.label + ", " + edge.probability }});
+        });
+    });
+
+    createVisualization(elements);
 });
 
 

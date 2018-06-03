@@ -19,6 +19,7 @@ function runWebPPL() {
     const
     { spawnSync } = require( 'child_process' ),
     out = spawnSync( 'webppl', [ './temp.wppl' ] );
+    //out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
 
     return out.stdout.toString();
 }
@@ -251,7 +252,7 @@ function loadGraph(flowGraph) {
     return graph;
 }
 
-fs.readFile('./tests/function_recursion.wppl', 'utf8', function(err, code) {
+fs.readFile('./tests/if_else.wppl', 'utf8', function(err, code) {
     if (err) {
         console.log(err);
         return;

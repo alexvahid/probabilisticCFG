@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node webPPLCFG.js",
+    "webppl": "node ./node_modules/webppl/webppl",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Kiran Sivakumar",
@@ -19,6 +20,7 @@
     "estree-walker": "^0.5.2",
     "fs": "0.0.1-security",
     "readline": "^1.3.0",
-    "styx": "0.0.8"
+    "styx": "0.0.8",
+    "webppl": "^0.9.12"
   }
 }

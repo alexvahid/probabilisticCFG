@@ -18,8 +18,8 @@ var walk = require( 'estree-walker' ).walk;
 function runWebPPL() {
     const
     { spawnSync } = require( 'child_process' ),
-    out = spawnSync( 'webppl', [ './temp.wppl' ] );
-    //out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
+    //out = spawnSync( 'webppl', [ './temp.wppl' ] );
+    out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
 
     return out.stdout.toString();
 }
@@ -98,8 +98,8 @@ function visitCFG(graph, head, rewrittenProgram, controlFlowInfo, initialProbabi
 
         reVisit = false;
         digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
-            console.log(depth);
-            array_of_nodes.forEach(function(node) {  
+            console.log("DEPTH: " + depth);
+            array_of_nodes.forEach(function(node) {
                 let nodeReady = true; 
                 let nodeVisited = false;
                 let incomingEdges = node.object.incomingEdges.length;

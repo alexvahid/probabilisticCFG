@@ -14,7 +14,9 @@
     "cytoscape-dagre": "^2.2.1",
     "cytosnap": "^2.0.1",
     "digraphe": "^1.0.3",
+    "escodegen": "^1.9.1",
     "esprima": "^4.0.0",
+    "estree-walker": "^0.5.2",
     "fs": "0.0.1-security",
     "readline": "^1.3.0",
     "styx": "0.0.8"

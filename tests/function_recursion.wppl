@@ -1,0 +1,9 @@
+//recursion to add flips 3 times
+var a = function(x, y) {
+    if (x == 0) {
+        return y;
+    } else {
+        a(x - 1, y + flip());
+    }
+}
+a(3,0);

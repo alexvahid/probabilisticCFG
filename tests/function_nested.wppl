@@ -1,0 +1,12 @@
+//function nested in another function
+var a = function(x) {
+    var b = function(x) {
+        return flip(x);
+    }
+    if (b(x)) {
+        return 100;
+    } else {
+        return 1;
+    }
+}
+a(.6);

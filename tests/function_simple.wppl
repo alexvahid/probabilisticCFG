@@ -1,0 +1,9 @@
+//just a simple function test
+var a = function(x) {
+    if (flip(x)) {
+        return 100;
+    } else {
+        return 1;
+    }
+}
+a(.6);

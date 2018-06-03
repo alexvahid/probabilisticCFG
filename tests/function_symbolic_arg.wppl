@@ -1,0 +1,10 @@
+//function doesnt take a concreate value
+var a = function(y) {
+    if (flip(y)) {
+        return 100;
+    } else {
+        return 1;
+    }
+}
+var y = (flip() + flip() + flip() + flip()) / 10
+a(y+.1);

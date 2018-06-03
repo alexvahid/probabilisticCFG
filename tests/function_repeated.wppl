@@ -6,9 +6,6 @@ var a = function(x) {
         return 1;
     }
 }
-var driver = function() {
-    var y = a(.6);
-    var z = a(.4);
-    return y + z;
-}
-Infer({ model: driver })
+var y = a(.6);
+var z = a(.3);
+y + z;

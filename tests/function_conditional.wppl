@@ -1,0 +1,14 @@
+//the function has a variable probability that it will be called
+var a = function(x) {
+    if (flip(x)) {
+        return 100;
+    } else {
+        return 1;
+    }
+}
+
+if (flip()) {
+    a(.6);
+} else {
+    42;
+}

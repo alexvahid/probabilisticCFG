@@ -83,13 +83,13 @@ function checkForCallExp(ast, rewrittenProgram, controlFlowInfo, incomingProbabi
     });
 }
 
-function visitCFG(graph, head, rewrittenProgram, controlFlowInfo, initialProbability, incomingCode, incomingConditions, incomingBlockLevel, args) {
+function visitCFG(graph, head, rewrittenProgram, controlFlowInfo, initialProbability, initialCode, initialConditions, initialBlockLevel, args) {
 
     //visit the graph
     let reVisit = false;
     do {
 
-        let blockLevel = incomingBlockLevel;
+        let blockLevel = initialBlockLevel;
 
         let reVisiting = false;
         if (reVisit) {
@@ -125,10 +125,15 @@ function visitCFG(graph, head, rewrittenProgram, controlFlowInfo, initialProbabi
                 if (!nodeReady || nodeVisited) return;
 
                 let incomingProbability = 0;
+                let incomingCode = null;
+                let incomingConditions = null;
 
                 //calculate the incoming total prob to this node
                 if (incomingEdges == 0) {
                     incomingProbability = initialProbability;
+                    incomingCode = initialCode;
+                    incomingConditions = initialConditions;
+                    
                 } else if (incomingEdges == 1) {
                     let incomingEdge0 = node.object.incomingEdges[0]
 

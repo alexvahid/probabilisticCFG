@@ -1,9 +1,7 @@
 const digraphe = require('digraphe');
 
 class CFGAnalyzer {
-    constructor() {
-
-    }
+    constructor() {}
 
     removeUnreachableNodes(graph, controlFlowInfo) {
         console.log("Removing unreachable nodes from CFG...");
@@ -44,6 +42,25 @@ class CFGAnalyzer {
         });
 
         console.log(numNodesRemoved + " node(s) removed and " + numEdgesRemoved + " edge(s) removed.");
+    }
+
+    conditionThroughNode(graph, controlFlowInfo, nodeID) {
+        
+    }
+
+    debug(graph, controlFlowInfo) {
+        let head = controlFlowInfo.flowGraph.entry.id.toString();
+        digraphe.Visitor.BFS(graph, head, function(array_of_nodes, depth) {
+            console.log("DEPTH: " + depth);
+            array_of_nodes.forEach(function(node) {
+                let outgoingEdges = node.object.outgoingEdges;
+                outgoingEdges.forEach(function (edge) {
+                    console.log(edge);
+                    console.log(edge.code);
+                    console.log("");
+                });
+            });
+        });
     }
 }
 

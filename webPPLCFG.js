@@ -404,6 +404,7 @@ fs.readFile(programFile, 'utf8', function(err, code) {
 
     if (cOption) {
         cfgAnalyzer.conditionThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
+        cfgAnalyzer.debug(graph, controlFlowInfo.flowGraph);
     }
 
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);

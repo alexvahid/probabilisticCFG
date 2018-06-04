@@ -73,15 +73,51 @@ class CFGAnalyzer {
                 node = node.object;
                 if (node.outgoingEdges.length > 1) {
                     let assumptions = [];
-                    let addConditioning = false;
-                    node.outgoingEdges.forEach(function(edge) {
-                        if (viableEdges.includes(edge)) {
-                            assumptions.push(edge.conditions);
+
+                    let addConditioning = true;
+                    let outgoingEdge0 = node.outgoingEdges[0];
+                    let outgoingEdge1 = node.outgoingEdges[1];
+                    if (viableEdges.includes(outgoingEdge0) && viableEdges.includes(outgoingEdge1)) {
+                        addConditioning = false;
+                    }
+                    else if (viableEdges.includes(outgoingEdge0)) {
+                        if (outgoingEdge0.conditions.length > 0) {
+                            assumptions.push(outgoingEdge0.conditions);
                         }
-                        else {
-                            addConditioning = true;
+                        else if (outgoingEdge1.conditions.length > 0) {
+                            let negatedConditions = [];
+                            outgoingEdge1.conditions.forEach(function(c) {
+                                negatedConditions.push("!(" + c + ")");
+                            });
+                            assumptions.push(negatedConditions);
                         }
-                    });
+                    }
+                    else if (viableEdges.includes(outgoingEdge1)) {
+                        if (outgoingEdge1.conditions.length > 0) {
+                            assumptions.push(outgoingEdge1.conditions);
+                        }
+                        else if (outgoingEdge0.conditions.length > 0) {
+                            let negatedConditions = [];
+                            outgoingEdge0.conditions.forEach(function(c) {
+                                negatedConditions.push("!(" + c + ")");
+                            });
+                            assumptions.push(negatedConditions);
+                        }
+                    }
+                    else {
+                        addConditioning = false;
+                    }
+
+                    // let addConditioning = false;
+                    // node.outgoingEdges.forEach(function(edge) {
+                    //     if (viableEdges.includes(edge)) {
+                    //         console.log("NOPE NIOPE NIOPE PPENOI NPE");
+                    //         assumptions.push(edge.conditions);
+                    //     }
+                    //     else {
+                    //         addConditioning = true;
+                    //     }
+                    // });
 
                     if (addConditioning) {
                         let code = "condition((";

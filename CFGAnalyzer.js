@@ -6,7 +6,7 @@ class CFGAnalyzer {
     removeUnreachableNodes(graph, flowGraph) {
         console.log("Removing unreachable nodes from CFG...");
 
-        let head = flowGraph.entry.id.toString()
+        let head = flowGraph.entry.id.toString();
         
         digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
             array_of_nodes.forEach(function(node) {
@@ -45,12 +45,82 @@ class CFGAnalyzer {
         console.log(numNodesRemoved + " node(s) removed and " + numEdgesRemoved + " edge(s) removed.");
     }
 
-    conditionThroughNode(graph, controlFlowInfo, nodeID) {
+    conditionThroughNode(graph, flowGraph, nodeID) {
+        let nodeToConditionThrough = graph.nodes[nodeID].object;
+        let nodes = [];
+        nodes.push(nodeToConditionThrough);
+
+        let viableEdges = [];
+        while (nodes.length !== 0) {
+            let node = nodes.shift();
+            node.incomingEdges.forEach(function(edge) {
+                viableEdges.push(edge);
+                nodes.push(edge.source);
+            });
+        }
+        digraphe.Visitor.BFS(graph, nodeID.toString(), function (array_of_nodes, depth) {
+            array_of_nodes.forEach(function(node) {
+                node = node.object;
+                node.outgoingEdges.forEach(function(edge) {
+                    viableEdges.push(edge);
+                });
+            });
+        });
         
+        let head = flowGraph.entry.id.toString();
+        digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
+            array_of_nodes.forEach(function(node) {
+                node = node.object;
+                if (node.outgoingEdges.length > 1) {
+                    let assumptions = [];
+                    let addConditioning = false;
+                    node.outgoingEdges.forEach(function(edge) {
+                        if (viableEdges.includes(edge)) {
+                            assumptions.push(edge.conditions);
+                        }
+                        else {
+                            addConditioning = true;
+                        }
+                    });
+
+                    if (addConditioning) {
+                        let code = "condition((";
+                        let firstAssumption = true;
+                        assumptions.forEach(function(assumption) {
+                            if (firstAssumption) {
+                                firstAssumption = false;
+                            }
+                            else {
+                                code += ") || (";
+                            }
+
+                            let firstCondition = true;
+                            assumption.forEach(function(condition) {
+                                if (firstCondition) {
+                                    firstCondition = false;
+                                }
+                                else {
+                                    code += " && ";
+                                }
+                                code += condition;
+                            });
+                        });
+
+                        code += "))";
+
+                        node.incomingEdges.forEach(function(edge) {
+                            if (edge.code.length > 0) {
+                                edge.code[edge.code.length - 1].push(code);
+                            }
+                        });
+                    }
+                }
+            });
+        });
     }
 
-    debug(graph, controlFlowInfo) {
-        let head = controlFlowInfo.flowGraph.entry.id.toString();
+    debug(graph, flowGraph) {
+        let head = flowGraph.entry.id.toString();
         digraphe.Visitor.BFS(graph, head, function(array_of_nodes, depth) {
             console.log("DEPTH: " + depth);
             array_of_nodes.forEach(function(node) {

@@ -359,7 +359,8 @@ function createVisualization(elements) {
 function displayUsage() {
     console.log("Usage: node webPPLCFG.js [options] program_file");
     console.log("   options:");
-    console.log("       -r      Remove unreachable nodes from CFG");
+    console.log("       -r              Remove unreachable nodes from CFG");
+    console.log("       -c <nodeID>     Condition CFG through node given by nodeID");
 }
 
 // Get command line arguments
@@ -372,6 +373,8 @@ if (argv._.length !== 3) {
 
 let programFile = argv._[2];
 let rOption = typeof argv.r !== 'undefined';
+let cOption = typeof argv.c !== 'undefined';
+let cOptionValue = argv.c;
 
 fs.readFile(programFile, 'utf8', function(err, code) {
     if (err) {
@@ -391,12 +394,16 @@ fs.readFile(programFile, 'utf8', function(err, code) {
 
     visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0, 0);
 
+    let cfgAnalyzer = new CFGAnalyzer();
     if (rOption) {
-        let cfgAnalyzer = new CFGAnalyzer();
-        cfgAnalyzer.removeUnreachableNodes(graph,controlFlowInfo.flowGraph);
+        cfgAnalyzer.removeUnreachableNodes(graph, controlFlowInfo.flowGraph);
         controlFlowInfo.functions.forEach(function(func){
             cfgAnalyzer.removeUnreachableNodes(loadGraph(func.flowGraph),func.flowGraph);
         });
+    }
+
+    if (cOption) {
+        cfgAnalyzer.conditionThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
     }
 
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);

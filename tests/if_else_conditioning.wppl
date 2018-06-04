@@ -17,6 +17,9 @@ else {
 */
 
 var a = flip();
+var b = flip();
+var c = a || b;
+
 if (a) {
     1
 }
@@ -24,8 +27,6 @@ else {
     2
 }
 
-var b = flip();
-var c = a || b;
 if (c) {
     3
 }

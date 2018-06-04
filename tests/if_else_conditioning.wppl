@@ -1,0 +1,34 @@
+/*
+var a = flip();
+var b = flip();
+var c = a || b;
+if (c) {
+    var d = a;
+    if (a) {
+        1
+    }
+    else {
+        2
+    }
+}
+else {
+    3
+}
+*/
+
+var a = flip();
+if (a) {
+    1
+}
+else {
+    2
+}
+
+var b = flip();
+var c = a || b;
+if (c) {
+    3
+}
+else {
+    4
+}

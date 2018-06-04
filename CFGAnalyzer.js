@@ -1,7 +1,32 @@
 const digraphe = require('digraphe');
+const fs = require('fs');
 
 class CFGAnalyzer {
     constructor() {}
+
+    getEdgesOfPathsThroughNode(graph, flowGraph, nodeID) {
+        let conditionNode = graph.nodes[nodeID].object;
+        let nodes = [ conditionNode ];
+
+        let viableEdges = [];
+        while (nodes.length !== 0) {
+            let node = nodes.shift();
+            node.incomingEdges.forEach(function(edge) {
+                viableEdges.push(edge);
+                nodes.push(edge.source);
+            });
+        }
+        digraphe.Visitor.BFS(graph, nodeID.toString(), function(array_of_nodes, depth) {
+            array_of_nodes.forEach(function(node) {
+                node = node.object;
+                node.outgoingEdges.forEach(function(edge) {
+                    viableEdges.push(edge);
+                });
+            });
+        });
+
+        return viableEdges;
+    }
 
     removeUnreachableNodes(graph, flowGraph) {
         console.log("Removing unreachable nodes from CFG...");
@@ -45,116 +70,6 @@ class CFGAnalyzer {
         console.log(numNodesRemoved + " node(s) removed and " + numEdgesRemoved + " edge(s) removed.");
     }
 
-    conditionThroughNode(graph, flowGraph, nodeID) {
-        let nodeToConditionThrough = graph.nodes[nodeID].object;
-        let nodes = [];
-        nodes.push(nodeToConditionThrough);
-
-        let viableEdges = [];
-        while (nodes.length !== 0) {
-            let node = nodes.shift();
-            node.incomingEdges.forEach(function(edge) {
-                viableEdges.push(edge);
-                nodes.push(edge.source);
-            });
-        }
-        digraphe.Visitor.BFS(graph, nodeID.toString(), function (array_of_nodes, depth) {
-            array_of_nodes.forEach(function(node) {
-                node = node.object;
-                node.outgoingEdges.forEach(function(edge) {
-                    viableEdges.push(edge);
-                });
-            });
-        });
-        
-        let head = flowGraph.entry.id.toString();
-        digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
-            array_of_nodes.forEach(function(node) {
-                node = node.object;
-                if (node.outgoingEdges.length > 1) {
-                    let assumptions = [];
-
-                    let addConditioning = true;
-                    let outgoingEdge0 = node.outgoingEdges[0];
-                    let outgoingEdge1 = node.outgoingEdges[1];
-                    if (viableEdges.includes(outgoingEdge0) && viableEdges.includes(outgoingEdge1)) {
-                        addConditioning = false;
-                    }
-                    else if (viableEdges.includes(outgoingEdge0)) {
-                        if (outgoingEdge0.conditions.length > 0) {
-                            assumptions.push(outgoingEdge0.conditions);
-                        }
-                        else if (outgoingEdge1.conditions.length > 0) {
-                            let negatedConditions = [];
-                            outgoingEdge1.conditions.forEach(function(c) {
-                                negatedConditions.push("!(" + c + ")");
-                            });
-                            assumptions.push(negatedConditions);
-                        }
-                    }
-                    else if (viableEdges.includes(outgoingEdge1)) {
-                        if (outgoingEdge1.conditions.length > 0) {
-                            assumptions.push(outgoingEdge1.conditions);
-                        }
-                        else if (outgoingEdge0.conditions.length > 0) {
-                            let negatedConditions = [];
-                            outgoingEdge0.conditions.forEach(function(c) {
-                                negatedConditions.push("!(" + c + ")");
-                            });
-                            assumptions.push(negatedConditions);
-                        }
-                    }
-                    else {
-                        addConditioning = false;
-                    }
-
-                    // let addConditioning = false;
-                    // node.outgoingEdges.forEach(function(edge) {
-                    //     if (viableEdges.includes(edge)) {
-                    //         console.log("NOPE NIOPE NIOPE PPENOI NPE");
-                    //         assumptions.push(edge.conditions);
-                    //     }
-                    //     else {
-                    //         addConditioning = true;
-                    //     }
-                    // });
-
-                    if (addConditioning) {
-                        let code = "condition((";
-                        let firstAssumption = true;
-                        assumptions.forEach(function(assumption) {
-                            if (firstAssumption) {
-                                firstAssumption = false;
-                            }
-                            else {
-                                code += ") || (";
-                            }
-
-                            let firstCondition = true;
-                            assumption.forEach(function(condition) {
-                                if (firstCondition) {
-                                    firstCondition = false;
-                                }
-                                else {
-                                    code += " && ";
-                                }
-                                code += condition;
-                            });
-                        });
-
-                        code += "))";
-
-                        node.incomingEdges.forEach(function(edge) {
-                            if (edge.code.length > 0) {
-                                edge.code[edge.code.length - 1].push(code);
-                            }
-                        });
-                    }
-                }
-            });
-        });
-    }
-
     debug(graph, flowGraph) {
         let head = flowGraph.entry.id.toString();
         digraphe.Visitor.BFS(graph, head, function(array_of_nodes, depth) {
@@ -169,6 +84,113 @@ class CFGAnalyzer {
             });
         });
     }
+
+    // conditionThroughNode(graph, flowGraph, nodeID) {
+    //     let conditionNode = graph.nodes[nodeID].object;
+    //     let nodes = [ conditionNode ];
+
+    //     let viableEdges = [];
+    //     while (nodes.length !== 0) {
+    //         let node = nodes.shift();
+    //         node.incomingEdges.forEach(function(edge) {
+    //             viableEdges.push(edge);
+    //             nodes.push(edge.source);
+    //         });
+    //     }
+    //     digraphe.Visitor.BFS(graph, nodeID.toString(), function(array_of_nodes, depth) {
+    //         array_of_nodes.forEach(function(node) {
+    //             node = node.object;
+    //             node.outgoingEdges.forEach(function(edge) {
+    //                 viableEdges.push(edge);
+    //             });
+    //         });
+    //     });
+
+    //     let head = flowGraph.entry.id.toString();
+    //     digraphe.Visitor.BFS(graph, head, function(array_of_nodes, depth) {
+    //         array_of_nodes.forEach(function(node) {
+    //             node = node.object;
+    //             if (node.outgoingEdges.length > 1) {
+    //                 let assumption = "";
+
+    //                 let addConditioning = true;
+    //                 let outgoingEdge0 = node.outgoingEdges[0];
+    //                 let outgoingEdge1 = node.outgoingEdges[1];
+    //                 if (    ( viableEdges.includes(outgoingEdge0) &&  viableEdges.includes(outgoingEdge1)) ||
+    //                         (!viableEdges.includes(outgoingEdge0) && !viableEdges.includes(outgoingEdge1)) ||
+    //                         (outgoingEdge0.conditions.length <= 0 && outgoingEdge1.conditions.length <= 0) ||
+    //                         (outgoingEdge0.conditions.length === outgoingEdge1.conditions.length)   ) {
+    //                     addConditioning = false;
+    //                 }
+    //                 else {
+    //                     if (outgoingEdge0.conditions.length > outgoingEdge1.conditions.length) {
+    //                         assumption += outgoingEdge0.conditions[outgoingEdge0.conditions.length - 1];
+    //                         outgoingEdge1.conditions.push("!(" + assumption + ")");
+    //                         if (viableEdges.includes(outgoingEdge0)) {
+    //                             assumption = "(" + assumption + ")";
+    //                         }
+    //                         else {
+    //                             assumption = "!(" + assumption + ")";
+    //                         }
+    //                     }
+    //                     else {
+    //                         assumption += outgoingEdge1.conditions[outgoingEdge1.conditions.length - 1];
+    //                         outgoingEdge0.conditions.push("!(" + assumption + ")");
+    //                         if (viableEdges.includes(outgoingEdge1)) {
+    //                             assumption = "(" + assumption + ")";
+    //                         }
+    //                         else {
+    //                             assumption = "!(" + assumption + ")";
+    //                         }
+    //                     }
+    //                 }
+
+    //                 if (addConditioning) {
+    //                     let code = "condition(" + assumption + ")";
+    //                     node.incomingEdges.forEach(function(edge) {
+    //                         if (edge.code.length > 0) {
+    //                             edge.code[edge.code.length - 1].push(code);
+    //                         }
+    //                     });
+    //                 }
+    //             }
+    //         });
+    //     });
+
+    //     this.evaluateCFG(graph, flowGraph);
+    // }
+
+    // evaluateCFG(graph, flowGraph) {
+    //     let self = this;
+    //     let head = flowGraph.entry.id.toString();
+    //     digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
+    //         array_of_nodes.forEach(function(node) {
+    //             node = node.object;
+
+    //             let incomingProbability = 0;
+    //             if (node.incomingEdges.length <= 0) {
+    //                 incomingProbability = 1;
+    //             }
+    //             else if (node.incomingEdges.length === 1) {
+    //                 incomingProbability = node.incomingEdges[0].probability;
+    //             }
+    //             else {
+    //                 node.incomingEdges.forEach(function(edge) {
+    //                     incomingProbability += edge.probability;
+    //                 });
+    //             }
+
+    //             if (node.outgoingEdges.length === 1) {
+    //                 node.outgoingEdges[0].probability = incomingProbability;
+    //             }
+    //             else if (node.outgoingEdges.length > 1) {
+    //                 node.outgoingEdges.forEach(function(edge) {
+    //                     edge.probability = self.inferProbability(edge);
+    //                 });
+    //             }
+    //         });
+    //     });
+    // }
 }
 
 module.exports = CFGAnalyzer;

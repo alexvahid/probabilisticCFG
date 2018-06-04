@@ -5,10 +5,11 @@ class CFGAnalyzer {
 
     }
 
-    removeUnreachableNodes(graph, controlFlowInfo) {
+    removeUnreachableNodes(graph, flowGraph) {
         console.log("Removing unreachable nodes from CFG...");
 
-        let head = controlFlowInfo.flowGraph.entry.id.toString();
+        let head = flowGraph.entry.id.toString()
+        
         digraphe.Visitor.BFS(graph, head, function (array_of_nodes, depth) {
             array_of_nodes.forEach(function(node) {
                 node.object.reachable = true;
@@ -25,7 +26,7 @@ class CFGAnalyzer {
             });
         });
 
-        let edges = controlFlowInfo.flowGraph.edges;
+        let edges = flowGraph.edges;
         let numEdgesRemoved = 0;
         edges.forEach(function(edge, index, edgesObject) {
             if (!edge.source.reachable || !edge.target.reachable) {
@@ -34,7 +35,7 @@ class CFGAnalyzer {
             }
         });
 
-        let nodes = controlFlowInfo.flowGraph.nodes;
+        let nodes = flowGraph.nodes;
         let numNodesRemoved = 0;
         nodes.forEach(function(node, index, nodesObject) {
             if (!node.reachable) {

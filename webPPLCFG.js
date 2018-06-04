@@ -393,7 +393,10 @@ fs.readFile(programFile, 'utf8', function(err, code) {
 
     if (rOption) {
         let cfgAnalyzer = new CFGAnalyzer();
-        cfgAnalyzer.removeUnreachableNodes(graph, controlFlowInfo);
+        cfgAnalyzer.removeUnreachableNodes(graph,controlFlowInfo.flowGraph);
+        controlFlowInfo.functions.forEach(function(func){
+            cfgAnalyzer.removeUnreachableNodes(loadGraph(func.flowGraph),func.flowGraph);
+        });
     }
 
     let controlFlowJSON = Styx.exportAsJson(controlFlowInfo);

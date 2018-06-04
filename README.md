@@ -17,7 +17,5 @@
     - probability: edge.probability
 
 ## TODO
-- Command line arguments
-- Refactor
 - Remove unreachable nodes
 - Analysis which forces control through a specific node

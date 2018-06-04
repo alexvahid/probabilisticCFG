@@ -7,5 +7,5 @@ var a = function(x) {
     }
 }
 var y = a(.6);
-var z = a(.3);
+var z = a(.4);
 y + z;

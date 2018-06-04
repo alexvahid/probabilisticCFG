@@ -259,13 +259,13 @@ function visitCFG(graph, head, rewrittenProgram, controlFlowInfo, initialProbabi
                         //use addition rule                     
                         outgoingEdge0.probability = (outgoingEdge0.probability + inferredProbability0) - (outgoingEdge0.probability * inferredProbability0);        
                     } else {
-                        outgoingEdge0.probability = inferredProbability0 * initialProbability;
+                        outgoingEdge0.probability = inferredProbability0;
                     }
                     if (outgoingEdge1.probability && !reVisiting) {
                         //use addition rule                     
                         outgoingEdge1.probability = (outgoingEdge1.probability + inferredProbability1) - (outgoingEdge1.probability * inferredProbability1);  
                     } else {
-                        outgoingEdge1.probability = inferredProbability1 * initialProbability;
+                        outgoingEdge1.probability = inferredProbability1;
                     }
 
                     if (inferredProbability0 != 0) {

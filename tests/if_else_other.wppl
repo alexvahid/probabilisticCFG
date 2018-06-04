@@ -1,0 +1,14 @@
+//if else with if in front
+
+var a = flip();
+
+//unreachable code
+if (a == -1) {
+    0;
+}
+
+if (a) {
+    1;
+} else {
+    2;
+}

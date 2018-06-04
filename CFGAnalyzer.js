@@ -5,6 +5,10 @@ class CFGAnalyzer {
     constructor() {}
 
     getEdgesOfPathsThroughNode(graph, flowGraph, nodeID) {
+        if (typeof graph.nodes[nodeID] === 'undefined' || graph.nodes[nodeID] === null) {
+            return null;
+        }
+        
         let conditionNode = graph.nodes[nodeID].object;
         let nodes = [ conditionNode ];
 
@@ -26,6 +30,27 @@ class CFGAnalyzer {
         });
 
         return viableEdges;
+    }
+
+    performNodeConditioning(viableEdges, outgoingEdge0, outgoingEdge1, blockLevel) {
+        if (!(  ( viableEdges.includes(outgoingEdge0) &&  viableEdges.includes(outgoingEdge1)) ||
+                (!viableEdges.includes(outgoingEdge0) && !viableEdges.includes(outgoingEdge1))  )) {
+            let conditioningAssumption = "";
+            let firstCondition = true;
+            let conditionsToAssume = viableEdges.includes(outgoingEdge0) ? outgoingEdge0.conditions : outgoingEdge1.conditions;
+            conditionsToAssume.forEach(function(c) {
+                if (firstCondition) {
+                    firstCondition = false;
+                }
+                else {
+                    conditioningAssumption += " && ";
+                }
+                conditioningAssumption += c;
+            });
+
+            let conditioningCode = "condition(" + conditioningAssumption + ")";
+            outgoingEdge0.code[blockLevel - 1].push(conditioningCode);
+        }
     }
 
     removeUnreachableNodes(graph, flowGraph) {

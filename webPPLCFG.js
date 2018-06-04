@@ -73,15 +73,20 @@ function rebuildFunc(funcCFI) {
 }
 
 var defaultFuncs = ['flip']
-function checkForCallExp(ast, rewrittenProgram, controlFlowInfo, incomingProbability, incomingCode, incomingConditions, blockLevel, functionLevel) {
+function checkForCallExp(   ast, rewrittenProgram, controlFlowInfo, incomingProbability, incomingCode, 
+                            incomingConditions, blockLevel, functionLevel) {
     walk(ast, {
         enter: function ( node, parent ) {
             if (node.type === 'CallExpression' && !defaultFuncs.includes(node.callee.name)) {   
                 let funcCFI = controlFlowInfo.functions.find(x => x.varName === node.callee.varName);    
                 let graph = loadGraph(funcCFI.flowGraph);
                 functionLevel++;
-                visitCFG(graph, funcCFI.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, incomingProbability, incomingCode, incomingConditions, blockLevel, functionLevel, node.arguments);
-                functionLevel--;                     
+                visitCFG(
+                    graph, funcCFI.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 
+                    incomingProbability, incomingCode, incomingConditions, blockLevel, functionLevel, 
+                    node.arguments
+                );
+                functionLevel--;
             }
         },
         leave: function ( node, parent ) {
@@ -109,7 +114,7 @@ function renameVarsByFunctionScope(ast, functionLevel) {
 
 function visitCFG(  graph, head, rewrittenProgram, controlFlowInfo, initialProbability, initialCode, 
                     initialConditions, initialBlockLevel, initialFunctionLevel, args, nodeConditioningInfo = null) {
-
+    let cfgAnalyzer = new CFGAnalyzer();
     //visit the graph
     let reVisit = false;
     do {
@@ -231,6 +236,10 @@ function visitCFG(  graph, head, rewrittenProgram, controlFlowInfo, initialProba
 
                     if (!incomingIgnoreBranch) checkForCallExp(outgoingEdge0.data, rewrittenProgram, controlFlowInfo, incomingProbability, incomingCode, incomingConditions, blockLevel, initialFunctionLevel);
 
+                    // console.log("AKJSDLASD");
+                    // console.log(incomingCode);
+                    // console.log(blockLevel);
+                    // console.log("END");
                     incomingCode[blockLevel].push(code);
                     outgoingEdge0.code = incomingCode;
 
@@ -257,30 +266,12 @@ function visitCFG(  graph, head, rewrittenProgram, controlFlowInfo, initialProba
                     let outgoingEdge1Condition = Escodegen.generate(outgoingEdge1.data);
                     outgoingEdge1.conditions.push(outgoingEdge1Condition);
 
-                    // Node conditioning BEGIN
+                    // Node conditioning
                     if (nodeConditioningInfo !== null) {
-                        let viableEdges = nodeConditioningInfo.viableEdges;
-        
-                        if (!(  ( viableEdges.includes(outgoingEdge0) &&  viableEdges.includes(outgoingEdge1)) ||
-                                (!viableEdges.includes(outgoingEdge0) && !viableEdges.includes(outgoingEdge1))  )) {
-                            let conditioningAssumption = "";
-                            let firstCondition = true;
-                            let conditionsToAssume = viableEdges.includes(outgoingEdge0) ? outgoingEdge0.conditions : outgoingEdge1.conditions;
-                            conditionsToAssume.forEach(function(c) {
-                                if (firstCondition) {
-                                    firstCondition = false;
-                                }
-                                else {
-                                    conditioningAssumption += " && ";
-                                }
-                                conditioningAssumption += c;
-                            });
-
-                            let conditioningCode = "condition(" + conditioningAssumption + ")";
-                            outgoingEdge0.code[blockLevel - 1].push(conditioningCode);
-                        }
+                        cfgAnalyzer.performNodeConditioning(
+                            nodeConditioningInfo.viableEdges, outgoingEdge0, outgoingEdge1, blockLevel
+                        );
                     }
-                    // Node conditioning END
 
                     let inferredProbability0 = inferProbability(outgoingEdge0);
                     let inferredProbability1 = inferProbability(outgoingEdge1);
@@ -426,7 +417,7 @@ fs.readFile(programFile, 'utf8', function(err, code) {
     let nodeConditioningInfo = null;
     if (cOption) {
         let viableEdges = cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
-        nodeConditioningInfo = { 'viableEdges': viableEdges };
+        if (viableEdges !== null) nodeConditioningInfo = { 'viableEdges': viableEdges };
     }
     visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0, 0, null, nodeConditioningInfo);
 

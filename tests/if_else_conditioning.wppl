@@ -1,4 +1,4 @@
-/*
+
 var a = flip();
 var b = flip();
 var c = a || b;
@@ -14,8 +14,9 @@ if (c) {
 else {
     3
 }
-*/
 
+
+/*
 var a = flip();
 var b = flip();
 var c = a || b;
@@ -33,3 +34,4 @@ if (c) {
 else {
     4
 }
+*/

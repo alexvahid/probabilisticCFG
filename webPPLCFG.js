@@ -19,8 +19,8 @@ var walk = require( 'estree-walker' ).walk;
 function runWebPPL() {
     const
     { spawnSync } = require( 'child_process' ),
-    //out = spawnSync( 'webppl', [ './temp.wppl' ] );
-    out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
+    out = spawnSync( 'webppl', [ './temp.wppl' ] );
+    //out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
 
     return out.stdout.toString();
 }
@@ -268,9 +268,47 @@ function visitCFG(  graph, head, rewrittenProgram, controlFlowInfo, initialProba
 
                     // Node conditioning
                     if (nodeConditioningInfo !== null) {
-                        cfgAnalyzer.performNodeConditioning(
-                            nodeConditioningInfo.viableEdges, outgoingEdge0, outgoingEdge1, blockLevel
-                        );
+                        if (nodeConditioningInfo.gatherConditions === true) {
+                            // cfgAnalyzer.performNodeConditioning(
+                            //     nodeConditioningInfo.viableEdges, outgoingEdge0, outgoingEdge1, blockLevel
+                            // );
+
+                            let viableEdges = nodeConditioningInfo.viableEdges;
+                            if (!(  ( viableEdges.includes(outgoingEdge0) &&  viableEdges.includes(outgoingEdge1)) ||
+                                    (!viableEdges.includes(outgoingEdge0) && !viableEdges.includes(outgoingEdge1))  )) {
+                                let conditioningAssumption = "";
+                                let undefinedCheck = "if (true";
+                                let firstCondition = true;
+                                let conditionsToAssume = viableEdges.includes(outgoingEdge0) ? outgoingEdge0.conditions : outgoingEdge1.conditions;
+                                conditionsToAssume.forEach(function(c) {
+                                    if (firstCondition) {
+                                        firstCondition = false;
+                                    }
+                                    else {
+                                        conditioningAssumption += " && ";
+                                    }
+                                    conditioningAssumption += c;
+
+                                    undefinedCheck += ' && typeof ' + c + ' !== \'undefined\''
+                                });
+                                undefinedCheck += ") ";
+                    
+                                let conditioningCode = undefinedCheck + "condition(" + conditioningAssumption + ")";
+                                if (typeof nodeConditioningInfo.conditionsMap[blockLevel - 1] === 'undefined') {
+                                    nodeConditioningInfo.conditionsMap[blockLevel - 1] = [ conditioningCode ];
+                                }
+                                else {
+                                    nodeConditioningInfo.conditionsMap[blockLevel - 1].push(conditioningCode);
+                                }
+                            }
+                        }
+                        else {
+                            if (typeof nodeConditioningInfo.conditionsMap[blockLevel - 1] !== 'undefined') {
+                                nodeConditioningInfo.conditionsMap[blockLevel - 1].forEach(function(conditioningCode) {
+                                    outgoingEdge0.code[blockLevel - 1].push(conditioningCode);
+                                });
+                            }
+                        }
                     }
 
                     let inferredProbability0 = inferProbability(outgoingEdge0);
@@ -417,7 +455,22 @@ fs.readFile(programFile, 'utf8', function(err, code) {
     let nodeConditioningInfo = null;
     if (cOption) {
         let viableEdges = cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
-        if (viableEdges !== null) nodeConditioningInfo = { 'viableEdges': viableEdges };
+        if (viableEdges !== null) {
+            nodeConditioningInfo = { 
+                'viableEdges': viableEdges, 
+                'gatherConditions': true,
+                'conditionsMap': {}
+            };
+        }
+        visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0, 0, null, nodeConditioningInfo);
+        
+        console.log("CONDITIONS MAP");
+        console.log(nodeConditioningInfo.conditionsMap);
+        console.log();
+        controlFlowInfo = Styx.parse(ast);
+        rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(ast);
+        graph = loadGraph(controlFlowInfo.flowGraph);
+        nodeConditioningInfo.gatherConditions = false;
     }
     visitCFG(graph, controlFlowInfo.flowGraph.entry.id.toString(), rewrittenProgram, controlFlowInfo, 1, [], [], 0, 0, null, nodeConditioningInfo);
 

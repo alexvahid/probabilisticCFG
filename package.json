@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./webPPLCFG.js ./tests/if_else_conditioning.wppl -c 12",
+    "start": "node ./webPPLCFG.js ./tests/if_else_conditioning.wppl -c 7",
     "webppl": "node ./node_modules/webppl/webppl",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

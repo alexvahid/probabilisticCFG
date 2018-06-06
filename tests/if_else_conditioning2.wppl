@@ -1,0 +1,17 @@
+var a = flip();
+var b = flip();
+var c = a || b;
+
+if (a) {
+    1
+}
+else {
+    2
+}
+
+if (c) {
+    3
+}
+else {
+    4
+}

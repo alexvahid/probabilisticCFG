@@ -19,8 +19,8 @@ var walk = require( 'estree-walker' ).walk;
 function runWebPPL() {
     const
     { spawnSync } = require( 'child_process' ),
-    out = spawnSync( 'webppl', [ './temp.wppl' ] );
-    //out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
+    //out = spawnSync( 'webppl', [ './temp.wppl' ] );
+    out = spawnSync( 'node', [ './node_modules/webppl/webppl', './temp.wppl' ] );
 
     return out.stdout.toString();
 }
@@ -406,7 +406,7 @@ function createVisualization(elements) {
         });
     }).then(function( img ){
         var base64Data = img.replace(/^data:image\/png;base64,/, "");
-        fs.writeFile("out.png", base64Data, 'base64', function(err) {
+        fs.writeFile(outputPNGFile, base64Data, 'base64', function(err) {
             if(err) {
                 return console.log(err);
             }
@@ -418,6 +418,7 @@ function createVisualization(elements) {
 function displayUsage() {
     console.log("Usage: node webPPLCFG.js [options] program_file");
     console.log("   options:");
+    console.log("       -o <filename>   Name of .png file to output CFG to");
     console.log("       -r              Remove unreachable nodes from CFG");
     console.log("       -c <nodeID>     Condition CFG through node given by nodeID");
 }
@@ -431,6 +432,8 @@ if (argv._.length !== 3) {
 }
 
 let programFile = argv._[2];
+let oOption = typeof argv.o !== 'undefined';
+let outputPNGFile = oOption ? argv.o : "out.png";
 let rOption = typeof argv.r !== 'undefined';
 let cOption = typeof argv.c !== 'undefined';
 let cOptionValue = argv.c;

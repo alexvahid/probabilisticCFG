@@ -4,6 +4,56 @@ const fs = require('fs');
 class CFGAnalyzer {
     constructor() {}
 
+    getAllEdges(graph, flowGraph) {
+        let edges = [];
+        let head = flowGraph.entry.id.toString();
+        digraphe.Visitor.BFS(graph, head, function(array_of_nodes, depth) {
+            array_of_nodes.forEach(function(node) {
+                node = node.object;
+                node.outgoingEdges.forEach(function(edge) {
+                    edges.push(edge);
+                });
+            });
+        });
+
+        return edges;
+    }
+
+    getIncomingEdgesOfNode(graph, nodeID) {
+        if (typeof graph.nodes[nodeID] === 'undefined' || graph.nodes[nodeID] === null) {
+            return null;
+        }
+        
+        let node = graph.nodes[nodeID].object;
+        let edges = [];
+        node.incomingEdges.forEach(function(edge) {
+            edges.push(edge);
+        });
+
+        return edges;
+    }
+
+    checkForValidPaths(graph, flowGraph, edges) {
+        let headID = flowGraph.entry.id.toString();
+        let head = graph.nodes[headID].object;
+        let nodes = [ head ];
+
+        while (nodes.length !== 0) {
+            let node = nodes.shift();
+            if (typeof node.outgoingEdges === 'undefined' || node.outgoingEdges === null || node.outgoingEdges.length <= 0) {
+                return true;
+            }
+
+            node.outgoingEdges.forEach(function(edge) {
+                if (edges.includes(edge)) {
+                    nodes.push(edge.target);
+                }
+            });
+        }
+
+        return false;
+    }
+
     getEdgesOfPathsThroughNode(graph, flowGraph, nodeID) {
         if (typeof graph.nodes[nodeID] === 'undefined' || graph.nodes[nodeID] === null) {
             return null;
@@ -93,6 +143,33 @@ class CFGAnalyzer {
         });
 
         console.log(numNodesRemoved + " node(s) removed and " + numEdgesRemoved + " edge(s) removed.");
+    }
+
+    union(list1, list2) {
+        let list = [];
+        for (let i = 0; i < list1.length; i++) {
+            list.push(list1[i]);
+        }
+        for (let i = 0; i < list2.length; i++) {
+            let item = list2[i];
+            if (!list.includes(item)) {
+                list.push(item);
+            }
+        }
+
+        return list;
+    }
+
+    intersection(list1, list2) {
+        let list = [];
+        for (let i = 0; i < list1.length; i++) {
+            let item = list1[i];
+            if (list2.includes(item)) {
+                list.push(item);
+            }
+        }
+
+        return list;
     }
 
     debug(graph, flowGraph) {

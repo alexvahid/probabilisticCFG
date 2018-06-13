@@ -418,9 +418,29 @@ function createVisualization(elements) {
 function displayUsage() {
     console.log("Usage: node webPPLCFG.js [options] program_file");
     console.log("   options:");
-    console.log("       -o <filename>   Name of .png file to output CFG to");
-    console.log("       -r              Remove unreachable nodes from CFG");
-    console.log("       -c <nodeID>     Condition CFG through node given by nodeID");
+    console.log("       -o <filename>                   Name of .png file to output CFG to");
+    console.log("       -r                              Remove unreachable nodes from CFG");
+    console.log("       -c <nodeID>                     Condition CFG through the node given by nodeID");
+    console.log("       --c-or <nodeID1,nodeID2,...>    Condition CFG such that control passes through at least one of the nodes given by nodeIDs");
+    console.log("       --c-and <nodeID1,nodeID2,...>   Condition CFG such that control passes through all of the nodes given by nodeIDs");
+    //console.log("       --c-neg <nodeID1,nodeID2,...>   Condition CFG such that control passes through none of the nodes given by nodeIDs");
+}
+
+function gatherOptionValues(argv, option, isEnabled) {
+    let optionValues = [];
+    if (isEnabled) {
+        if (typeof argv[option] === 'number') {
+            optionValues.push(argv[option]);
+        }
+        else {
+            optionValues = argv[option].split(',');
+            for (let i = 0; i < optionValues.length; i++) {
+                optionValues[i] = parseInt(optionValues[i], 10);
+            }
+        }
+    }
+
+    return optionValues;
 }
 
 // Get command line arguments
@@ -435,16 +455,20 @@ let programFile = argv._[2];
 let oOption = typeof argv.o !== 'undefined';
 let outputPNGFile = oOption ? argv.o : "out.png";
 let rOption = typeof argv.r !== 'undefined';
+
 let cOption = typeof argv.c !== 'undefined';
-let cOptionValues = [ argv.c ];
-if (!cOption) {
-    cOptionValues = [];
-}
-else if (typeof argv.c !== 'number') {
-    cOptionValues = argv.c.split(',');
-    for (let i = 0; i < cOptionValues.length; i++) {
-        cOptionValues[i] = parseInt(cOptionValues[i], 10);
-    }
+let cOptionValue = argv.c;
+let cOrOption = typeof argv['c-or'] !== 'undefined';
+let cOrOptionValues = gatherOptionValues(argv, 'c-or', cOrOption);
+let cAndOption = typeof argv['c-and'] !== 'undefined';
+let cAndOptionValues = gatherOptionValues(argv, 'c-and', cAndOption);
+let cNegOption = typeof argv['c-neg'] !== 'undefined';
+let cNegOptionValues = gatherOptionValues(argv, 'c-neg', cNegOption);
+
+if (cOption + cOrOption + cAndOption + cNegOption > 1) {
+    console.log("Error: more than 1 conditioning option selected");
+    displayUsage();
+    process.exit(1);
 }
 
 fs.readFile(programFile, 'utf8', function(err, code) {
@@ -465,12 +489,43 @@ fs.readFile(programFile, 'utf8', function(err, code) {
 
     let cfgAnalyzer = new CFGAnalyzer();
     let nodeConditioningInfo = null;
-    if (cOption) {
-        let viableEdges = [];
-        for (let i = 0; i < cOptionValues.length; i++) {
-            let cOptionValue = cOptionValues[i];
-            viableEdges = viableEdges.concat(cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue));
+    if (cOption || cOrOption || cAndOption || cNegOption) {
+        let viableEdges = null;
+        if (cOption) {
+            viableEdges = cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
         }
+        else if (cOrOption) {
+            viableEdges = [];
+            for (let i = 0; i < cOrOptionValues.length; i++) {
+                viableEdges = 
+                    cfgAnalyzer.union(viableEdges, cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOrOptionValues[i]));
+            }
+        }
+        else if (cAndOption) {
+            viableEdges = cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cAndOptionValues[0]);
+            for (let i = 1; i < cAndOptionValues.length; i++) {
+                viableEdges = 
+                    cfgAnalyzer.intersection(viableEdges, cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cAndOptionValues[i]));
+            }
+
+            if (!cfgAnalyzer.checkForValidPaths(graph, controlFlowInfo.flowGraph, viableEdges)) {
+                console.log("No valid paths with non-zero probability exist in the CFG");
+                process.exit();
+            }
+        }
+        // else if (cNegOption) {
+        //     viableEdges = cfgAnalyzer.getAllEdges(graph, controlFlowInfo.flowGraph);
+        //     for (let i = 0; i < cNegOptionValues.length; i++) {
+        //         let incomingEdges = cfgAnalyzer.getIncomingEdgesOfNode(graph, cNegOptionValues[i]);
+        //         incomingEdges.forEach(function(incomingEdge) {
+        //             let index = viableEdges.indexOf(incomingEdge);
+        //             if (index > -1) {
+        //                 viableEdges.splice(index, 1);
+        //             }
+        //         });
+        //     }
+        // }
+
         if (viableEdges !== null) {
             nodeConditioningInfo = { 
                 'viableEdges': viableEdges, 

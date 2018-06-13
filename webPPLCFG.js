@@ -436,7 +436,16 @@ let oOption = typeof argv.o !== 'undefined';
 let outputPNGFile = oOption ? argv.o : "out.png";
 let rOption = typeof argv.r !== 'undefined';
 let cOption = typeof argv.c !== 'undefined';
-let cOptionValue = argv.c;
+let cOptionValues = [ argv.c ];
+if (!cOption) {
+    cOptionValues = [];
+}
+else if (typeof argv.c !== 'number') {
+    cOptionValues = argv.c.split(',');
+    for (let i = 0; i < cOptionValues.length; i++) {
+        cOptionValues[i] = parseInt(cOptionValues[i], 10);
+    }
+}
 
 fs.readFile(programFile, 'utf8', function(err, code) {
     if (err) {
@@ -457,7 +466,11 @@ fs.readFile(programFile, 'utf8', function(err, code) {
     let cfgAnalyzer = new CFGAnalyzer();
     let nodeConditioningInfo = null;
     if (cOption) {
-        let viableEdges = cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue);
+        let viableEdges = [];
+        for (let i = 0; i < cOptionValues.length; i++) {
+            let cOptionValue = cOptionValues[i];
+            viableEdges = viableEdges.concat(cfgAnalyzer.getEdgesOfPathsThroughNode(graph, controlFlowInfo.flowGraph, cOptionValue));
+        }
         if (viableEdges !== null) {
             nodeConditioningInfo = { 
                 'viableEdges': viableEdges, 

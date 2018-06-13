@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -c 7",
+    "start": "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -c 7,14",
     "ex1": "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -o ex1.png",
     "ex1_cond": "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -o ex1_cond.png -c 7",
     "ex1_cond_r": "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -o ex1_cond_r.png -c 7 -r",

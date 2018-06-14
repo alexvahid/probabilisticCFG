@@ -21,3 +21,4 @@
         - "$ npm run ex1" will run "$ node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -o ex1.png"
         - "$ npm run ex1_cond" will run "node ./webPPLCFG.js ./tests/if_else_conditioning1.wppl -o ex1_cond.png -c 7"
         - etc...
+    - Please see the contents of package.json for the rest of the scripts.

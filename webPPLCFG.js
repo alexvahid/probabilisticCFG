@@ -416,7 +416,7 @@ function createVisualization(elements) {
 }
 
 function displayUsage() {
-    console.log("Usage: node webPPLCFG.js [options] program_file");
+    console.log("Usage: node webPPLCFG.js [options] input_program_file");
     console.log("   options:");
     console.log("       -o <filename>                   Name of .png file to output CFG to");
     console.log("       -r                              Remove unreachable nodes from CFG");
